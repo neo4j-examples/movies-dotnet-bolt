@@ -1,8 +1,8 @@
 ﻿namespace Neo4jDotNetDemo.Controllers
 {
     using System.Collections.Generic;
-    using System.Linq;
     using System.Web.Http;
+    using Neo4j.Driver;
 
     [RoutePrefix("graph")]
     public class GraphController : ApiController
@@ -15,32 +15,36 @@
             // "RETURN m.title as movie, collect(a.name) as cast "
             // "LIMIT {limit}")
 
-            var statementTemplate = "MATCH (a:Person)-[:ACTED_IN]->(m:Movie) RETURN m.title as movie, collect(a.name) as cast LIMIT {limit}";
+            var statementText = "MATCH (a:Person)-[:ACTED_IN]->(m:Movie) RETURN m.title as movie, collect(a.name) as cast LIMIT {limit}";
             var statementParameters = new Dictionary<string, object> {{"limit", limit}};
-
-            var session = WebApiConfig.Neo4jDriver.Session();
-
-            var cursor = session.Run(statementTemplate, statementParameters);
 
             var nodes = new List<NodeResult>();
             var relationships = new List<object>();
-            var i = 0;
 
-            foreach (var record in cursor.Stream())
+            using (var session = WebApiConfig.Neo4jDriver.Session())
             {
-                var target = i;
-                nodes.Add(new NodeResult {title = record["movie"], label = "movie"});
-                var castMembers = new List<object>(record["cast"]).Cast<string>();
-                foreach (var castMember in castMembers)
+                var result = session.Run(statementText, statementParameters);
+
+                var i = 0;
+
+                foreach (var record in result)
                 {
-                    var source = nodes.FindIndex(c => c.title == castMember);
-                    if (source == -1)
+                    var target = i;
+                    nodes.Add(new NodeResult { title = record["movie"].As<string>(), label = "movie" });
+                    i += 1;
+
+                    var castMembers = record["cast"].As<List<string>>();
+                    foreach (var castMember in castMembers)
                     {
-                        nodes.Add(new NodeResult {title = castMember, label = "actor"});
-                        source = i;
-                        i += 1;
+                        var source = nodes.FindIndex(c => c.title == castMember);
+                        if (source == -1)
+                        {
+                            nodes.Add(new NodeResult { title = castMember, label = "actor" });
+                            source = i;
+                            i += 1;
+                        }
+                        relationships.Add(new { source, target });
                     }
-                    relationships.Add(new {source, target});
                 }
             }
 

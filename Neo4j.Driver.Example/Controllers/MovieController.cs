@@ -3,6 +3,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Web.Http;
+    using Neo4j.Driver;
 
     [RoutePrefix("movie")]
     public class MovieController : ApiController
@@ -21,30 +22,29 @@
             var statementTemplate = "MATCH (movie:Movie {title:{title}}) OPTIONAL MATCH (movie)<-[r]-(person:Person) RETURN movie.title as title, collect([person.name, head(split(lower(type(r)), '_')), r.roles]) as cast LIMIT 1";
             var statementParameters = new Dictionary<string, object> {{"title", title}};
 
-            var session = WebApiConfig.Neo4jDriver.Session();
-            var cursor = session.Run(statementTemplate, statementParameters);
-
-            var cursorResult = cursor.Stream().Single();
             var result = new MovieResult();
-            result.title = cursorResult.Values["title"];
-
-            var castResults = new List<CastResult>();
-            List<object> cast = cursorResult.Values["cast"];
-            foreach (IList<object> castMember in cast)
+            using (var session = WebApiConfig.Neo4jDriver.Session())
             {
-                var roles = castMember[2] as IList<object>;
-                var castResult = new CastResult
+                var statementResult = session.Run(statementTemplate, statementParameters);
+
+                var record = statementResult.Single();
+
+                result.title = record["title"].As<string>();
+
+                var castResults = new List<CastResult>();
+                List<object> cast = record["cast"].As<List<object>>();
+                foreach (IList<object> castMember in cast)
                 {
-                    name = castMember[0].ToString(),
-                    job = castMember[1].ToString()
-                };
-                if (roles != null)
-                {
-                    castResult.role = roles.Select(c => c.ToString());
+                    var castResult = new CastResult
+                    {
+                        name = castMember[0].As<string>(),
+                        job = castMember[1].As<string>(),
+                        role = castMember[2]?.As<List<string>>()
+                    };
+                    castResults.Add(castResult);
                 }
-                castResults.Add(castResult);
+                result.cast = castResults;
             }
-            result.cast = castResults;
 
             return Ok(result);
         }
