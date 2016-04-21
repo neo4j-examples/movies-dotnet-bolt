@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Web.Http;
-    using Neo4j.Driver;
+    using Neo4j.Driver.V1;
 
     [RoutePrefix("graph")]
     public class GraphController : ApiController

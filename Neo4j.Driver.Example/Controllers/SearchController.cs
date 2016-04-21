@@ -1,6 +1,6 @@
 ﻿namespace Neo4jDotNetDemo.Controllers
 {
-    using Neo4j.Driver;
+    using Neo4j.Driver.V1;
     using System.Collections.Generic;
     using System.Linq;
     using System.Web.Http;
