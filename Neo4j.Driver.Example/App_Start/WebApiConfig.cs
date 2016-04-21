@@ -3,13 +3,13 @@
     using System.Configuration;
     using System.Linq;
     using System.Web.Http;
-    using Neo4j.Driver;
+    using Neo4j.Driver.V1;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
 
     public static class WebApiConfig
     {
-        public static Driver Neo4jDriver { get; private set; }
+        public static IDriver Neo4jDriver { get; private set; }
 
         public static void Register(HttpConfiguration config)
         {
