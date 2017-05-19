@@ -1,7 +1,7 @@
 # Neo4j Movies Example Application - Asp.net WebApi Version
 
 ### Requirements
-* Have Neo4j running with the Movies Dataset [Download & Install 3.0 ALPHA](http://alpha.neohq.net/)
+* Have Neo4j running with the Movies Dataset
 * Visual Studio 2015
 
 ### Stack
