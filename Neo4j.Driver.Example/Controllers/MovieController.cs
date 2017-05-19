@@ -12,18 +12,12 @@
         [Route("{title}")]
         public IHttpActionResult GetMovieByTitle(string title)
         {
-            //query = ("MATCH (movie:Movie {title:{title}}) "
-            // "OPTIONAL MATCH (movie)<-[r]-(person:Person) "
-            // "RETURN movie.title as title,"
-            // "collect([person.name, "
-            // "         head(split(lower(type(r)), '_')), r.roles]) as cast "
-            // "LIMIT 1")
 
             var statementTemplate = "MATCH (movie:Movie {title:{title}}) OPTIONAL MATCH (movie)<-[r]-(person:Person) RETURN movie.title as title, collect([person.name, head(split(lower(type(r)), '_')), r.roles]) as cast LIMIT 1";
             var statementParameters = new Dictionary<string, object> {{"title", title}};
 
             var result = new MovieResult();
-            using (var session = WebApiConfig.Neo4jDriver.Session())
+            using (var session = WebApiConfig.Neo4jDriver.Session(AccessMode.Read))
             {
                 var statementResult = session.Run(statementTemplate, statementParameters);
 

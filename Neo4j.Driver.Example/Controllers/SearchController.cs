@@ -15,7 +15,7 @@
 // tag::minimum-viable-snippet[]
             var movies = new List<Movie>();
 
-            using (var session = WebApiConfig.Neo4jDriver.Session())
+            using (var session = WebApiConfig.Neo4jDriver.Session(AccessMode.Read))
             {
                 var result = session.Run("MATCH (movie:Movie) WHERE movie.title CONTAINS {title} RETURN movie", new {title = q});
 

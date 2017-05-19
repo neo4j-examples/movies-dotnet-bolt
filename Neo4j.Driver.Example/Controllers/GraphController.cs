@@ -21,7 +21,7 @@
             var nodes = new List<NodeResult>();
             var relationships = new List<object>();
 
-            using (var session = WebApiConfig.Neo4jDriver.Session())
+            using (var session = WebApiConfig.Neo4jDriver.Session(AccessMode.Read))
             {
                 var result = session.Run(statementText, statementParameters);
 
