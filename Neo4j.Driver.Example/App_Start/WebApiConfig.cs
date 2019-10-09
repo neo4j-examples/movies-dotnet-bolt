@@ -26,8 +26,14 @@
 
             //Use an IoC container and register as a Singleton
             var url = ConfigurationManager.AppSettings["GraphDBUrl"];
-            var driver = GraphDatabase.Driver(url);
-
+            string username = ConfigurationManager.AppSettings["GraphDBUser"];
+            string password = ConfigurationManager.AppSettings["GraphDBPassword"];
+            IAuthToken authToken =  AuthTokens.Basic(username,password);
+            IDriver driver = GraphDatabase.Driver(url);
+            if (!string.IsNullOrEmpty(password) && !string.IsNullOrEmpty(username))
+            {
+                driver = GraphDatabase.Driver(url,authToken: authToken);
+            }
             Neo4jDriver = driver;
         }
     }
